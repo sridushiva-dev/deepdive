@@ -145,6 +145,17 @@ export const DEMO_JOURNEYS: DemoJourney[] = [
   },
 ];
 
+export function getDemoResponsesForNode(nodeId: string): string[] {
+  const journey = DEMO_JOURNEYS[0];
+  if (nodeId.includes("stellar") || nodeId.includes("supernova") || nodeId.includes("neutron")) {
+    return journey.cannedResponses.stellar ?? journey.cannedResponses.default;
+  }
+  if (nodeId.includes("horizon") || nodeId.includes("schwarz")) {
+    return journey.cannedResponses.horizon ?? journey.cannedResponses.default;
+  }
+  return journey.cannedResponses.default;
+}
+
 export function findDemoNode(tree: DemoNode, id: string): DemoNode | null {
   if (tree.id === id) return tree;
   if (tree.children) {

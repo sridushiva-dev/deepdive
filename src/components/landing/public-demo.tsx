@@ -1,14 +1,18 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useCallback } from "react";
+import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
-import { LandingConstellationPreview } from "@/components/landing/constellation-preview";
 import { ConstellationMap } from "@/components/constellation/constellation-map";
-import { DEMO_JOURNEYS, flattenDemoTree } from "@/lib/demo-content";
+import {
+  DEMO_JOURNEYS,
+  flattenDemoTree,
+  findDemoNode,
+  getDemoResponsesForNode,
+} from "@/lib/demo-content";
 import { calculateNodePositions } from "@/lib/constellation-layout";
-import { ArrowRight, Map, MessageSquare } from "lucide-react";
+import { ArrowRight, BookOpen } from "lucide-react";
 
 const DEMO = DEMO_JOURNEYS[0];
 const flat = flattenDemoTree(DEMO.tree);
@@ -17,169 +21,228 @@ const layoutInputs = flat.map((f) => ({
   parentId: f.parentId,
   depth: f.depth,
 }));
-const positions = calculateNodePositions(layoutInputs);
-
-const demoNodes = flat.map((f) => {
-  const pos = positions.get(f.node.id) ?? { x: 0, y: 0 };
-  const state =
-    f.depth === 0 ? "SEED" : f.node.id === "stellar-collapse" ? "EXPLORING" : f.depth >= 2 ? "DEEP" : "DISCOVERED";
-  return {
-    id: f.node.id,
-    label: f.node.label,
-    state,
-    depth: f.depth,
-    summary: f.node.summary,
-    positionX: pos.x,
-    positionY: pos.y,
-    parentId: f.parentId,
-  };
+const positions = calculateNodePositions(layoutInputs, {
+  horizontalGap: 280,
+  verticalGap: 130,
 });
 
-const cannedMessages = [
-  {
-    id: "1",
-    role: "assistant" as const,
-    content:
-      "Welcome to your demo dive into Black Holes. Each question opens new branches in your constellation. Try asking: 'What happens during stellar collapse?'",
-  },
-];
+type DemoNodeState = {
+  id: string;
+  label: string;
+  state: string;
+  depth: number;
+  summary?: string;
+  positionX: number;
+  positionY: number;
+  parentId: string | null;
+};
+
+function buildInitialNodes(): DemoNodeState[] {
+  return flat.map((f) => {
+    const pos = positions.get(f.node.id) ?? { x: 0, y: 0 };
+    return {
+      id: f.node.id,
+      label: f.node.label,
+      state: f.depth === 0 ? "SEED" : "DISCOVERED",
+      depth: f.depth,
+      summary: f.node.summary,
+      positionX: pos.x,
+      positionY: pos.y,
+      parentId: f.parentId,
+    };
+  });
+}
+
+type ChatMsg = { id: string; role: "user" | "assistant"; content: string };
 
 export function PublicDemoExperience() {
   const { data: session } = useSession();
-  const router = useRouter();
-  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
-  const [showMap, setShowMap] = useState(true);
-
-  const selectedNode = demoNodes.find((n) => n.id === selectedNodeId);
-
-  function handleTryDemo() {
-    if (session) {
-      router.push("/onboarding");
-    } else {
-      router.push("/signup?demo=1");
-    }
-  }
-
-  return (
-    <div className="space-y-8">
-      <div className="flex flex-col sm:flex-row gap-3 justify-center">
-        <Button variant="outline" size="sm" onClick={() => setShowMap(!showMap)}>
-          {showMap ? <MessageSquare className="w-4 h-4" /> : <Map className="w-4 h-4" />}
-          {showMap ? "Show chat" : "Show map"}
-        </Button>
-      </div>
-
-      <div className="grid lg:grid-cols-2 gap-6 min-h-[420px]">
-        {showMap ? (
-          <ConstellationMap
-            nodes={demoNodes}
-            onNodeClick={setSelectedNodeId}
-            selectedNodeId={selectedNodeId}
-            stats={{ nodeCount: demoNodes.length, depthMax: 3, minutes: 12 }}
-            isDemo
-          />
-        ) : (
-          <div className="glass rounded-2xl border border-border p-6 flex flex-col justify-center">
-            <LandingConstellationPreview />
-          </div>
-        )}
-
-        <div className="space-y-4">
-          {selectedNode && (
-            <div className="glass rounded-2xl p-4 border border-border">
-              <p className="text-xs text-accent mb-1">Selected concept</p>
-              <h3 className="font-semibold">{selectedNode.label}</h3>
-              {selectedNode.summary && (
-                <p className="text-sm text-muted mt-2">{selectedNode.summary}</p>
-              )}
-            </div>
-          )}
-          <PublicDemoChat selectedNodeId={selectedNodeId} nodeLabel={selectedNode?.label} />
-        </div>
-      </div>
-
-      <div className="text-center glass rounded-2xl p-6 border border-accent/20">
-        <p className="text-muted mb-4">
-          This is a live preview — no API key needed. Sign up to save your constellation and dive with real AI.
-        </p>
-        <Button onClick={handleTryDemo}>
-          {session ? "Continue to onboarding" : "Start your own dive — free"}
-          <ArrowRight className="w-4 h-4" />
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-function PublicDemoChat({
-  nodeLabel,
-}: {
-  selectedNodeId: string | null;
-  nodeLabel?: string;
-}) {
-  type ChatMsg = { id: string; role: "user" | "assistant"; content: string };
-  const [messages, setMessages] = useState<ChatMsg[]>(cannedMessages);
+  const [nodes, setNodes] = useState<DemoNodeState[]>(buildInitialNodes);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>("root");
+  const [messages, setMessages] = useState<ChatMsg[]>([
+    {
+      id: "welcome",
+      role: "assistant",
+      content:
+        "Welcome to your free preview of Deep Dive. Click any concept on the map to read and explore — no sign-up or payment needed. Try Stellar Collapse or Event Horizon.",
+    },
+  ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const selectedDemoNode = selectedNodeId
+    ? findDemoNode(DEMO.tree, selectedNodeId)
+    : null;
+  const selectedUiNode = nodes.find((n) => n.id === selectedNodeId);
+
+  const handleNodeClick = useCallback((nodeId: string) => {
+    setSelectedNodeId(nodeId);
+
+    const demoNode = findDemoNode(DEMO.tree, nodeId);
+    if (!demoNode) return;
+
+    setNodes((prev) =>
+      prev.map((n) => {
+        if (n.id === nodeId) {
+          return { ...n, state: n.depth >= 2 ? "DEEP" : "EXPLORING" };
+        }
+        return n;
+      })
+    );
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        role: "assistant",
+        content: `**${demoNode.label}** — ${demoNode.body}\n\nAsk a follow-up below to dive even deeper into this branch.`,
+      },
+    ]);
+  }, []);
+
   async function handleSend() {
     if (!input.trim() || loading) return;
-    const userMsg = { id: crypto.randomUUID(), role: "user" as const, content: input.trim() };
-    setMessages((prev) => [...prev, userMsg]);
+
+    const userText = input.trim();
+    setMessages((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), role: "user", content: userText },
+    ]);
     setInput("");
     setLoading(true);
 
-    await new Promise((r) => setTimeout(r, 600));
+    await new Promise((r) => setTimeout(r, 500));
 
-    const responses = DEMO.cannedResponses.default;
+    const responseKey = selectedNodeId ?? "root";
+    const responses = getDemoResponsesForNode(responseKey);
     const response = responses[Math.floor(Math.random() * responses.length)];
+
     setMessages((prev) => [
       ...prev,
-      { id: crypto.randomUUID(), role: "assistant" as const, content: response },
+      { id: crypto.randomUUID(), role: "assistant", content: response },
     ]);
     setLoading(false);
   }
 
   return (
-    <div className="flex flex-col h-full min-h-[300px] rounded-2xl border border-border bg-surface/50">
-      {nodeLabel && (
-        <div className="px-4 py-3 border-b border-border">
-          <p className="text-xs text-muted">Diving into</p>
-          <p className="text-sm font-medium">{nodeLabel}</p>
+    <div className="space-y-10 lg:space-y-14">
+      <div className="grid lg:grid-cols-[1.15fr_0.85fr] gap-8 lg:gap-12 xl:gap-16 items-start">
+        {/* Map — more breathing room */}
+        <div className="min-h-[480px] lg:min-h-[560px]">
+          <ConstellationMap
+            nodes={nodes}
+            onNodeClick={handleNodeClick}
+            selectedNodeId={selectedNodeId}
+            stats={{
+              nodeCount: nodes.length,
+              depthMax: Math.max(...nodes.map((n) => n.depth)),
+              minutes: 12,
+            }}
+            isDemo
+            relaxed
+            hideMiniMap
+          />
         </div>
-      )}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 max-h-[280px]">
-        {messages.map((msg) => (
-          <div key={msg.id} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-            <div
-              className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm ${
-                msg.role === "user"
-                  ? "bg-accent text-background"
-                  : "bg-surface-elevated border border-border"
-              }`}
-            >
-              {msg.content}
+
+        {/* Reading + chat column */}
+        <div className="flex flex-col gap-6 lg:gap-8 min-h-[480px]">
+          {selectedDemoNode && selectedUiNode && (
+            <div className="glass rounded-2xl p-6 lg:p-8 border border-border space-y-4">
+              <div className="flex items-start gap-3">
+                <BookOpen className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-xs text-accent uppercase tracking-wider mb-1">
+                    Reading · depth {selectedUiNode.depth}
+                  </p>
+                  <h3 className="text-xl font-semibold">{selectedDemoNode.label}</h3>
+                  <p className="text-sm text-muted mt-2 leading-relaxed">
+                    {selectedDemoNode.summary}
+                  </p>
+                </div>
+              </div>
+              <p className="text-sm leading-relaxed text-foreground/90 pl-8">
+                {selectedDemoNode.body}
+              </p>
+              {selectedDemoNode.children && selectedDemoNode.children.length > 0 && (
+                <div className="pl-8 pt-2">
+                  <p className="text-xs text-muted mb-2">Branches to explore on the map:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedDemoNode.children.map((child) => (
+                      <button
+                        key={child.id}
+                        type="button"
+                        onClick={() => handleNodeClick(child.id)}
+                        className="text-xs px-3 py-1.5 rounded-full border border-accent/30 bg-accent/5 hover:bg-accent/15 hover:border-accent/50 transition-colors"
+                      >
+                        {child.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="flex flex-col flex-1 rounded-2xl border border-border bg-surface/40 min-h-[280px]">
+            <div className="flex-1 overflow-y-auto p-5 lg:p-6 space-y-4 max-h-[320px]">
+              {messages.map((msg) => (
+                <div
+                  key={msg.id}
+                  className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                >
+                  <div
+                    className={`max-w-[90%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                      msg.role === "user"
+                        ? "bg-accent text-background"
+                        : "bg-surface-elevated border border-border"
+                    }`}
+                  >
+                    {msg.content.split("\n").map((line, i) => (
+                      <span key={i}>
+                        {line.startsWith("**") && line.endsWith("**")
+                          ? <strong>{line.slice(2, -2)}</strong>
+                          : line}
+                        {i < msg.content.split("\n").length - 1 && <br />}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              {loading && (
+                <p className="text-sm text-muted animate-pulse pl-2">Diving deeper...</p>
+              )}
+            </div>
+            <div className="p-5 lg:p-6 border-t border-border">
+              <div className="flex gap-3">
+                <input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                  placeholder="Ask anything to dive deeper..."
+                  className="flex h-11 w-full rounded-xl border border-border bg-surface px-4 text-sm"
+                />
+                <Button size="icon" className="shrink-0" onClick={handleSend} disabled={loading || !input.trim()}>
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              </div>
+              <p className="text-xs text-muted mt-3 text-center">
+                Free preview — all concepts readable. Sign up only to save your own dives.
+              </p>
             </div>
           </div>
-        ))}
-        {loading && (
-          <div className="text-sm text-muted animate-pulse">Diving deeper...</div>
-        )}
+        </div>
       </div>
-      <div className="p-4 border-t border-border">
-        <div className="flex gap-2">
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            placeholder="Ask anything to dive deeper..."
-            className="flex h-10 w-full rounded-xl border border-border bg-surface px-4 text-sm"
-          />
-          <Button size="icon" onClick={handleSend} disabled={loading || !input.trim()}>
+
+      <div className="text-center glass rounded-2xl p-8 lg:p-10 border border-border/60 max-w-2xl mx-auto">
+        <p className="text-muted mb-5 leading-relaxed">
+          Loved the preview? Create a free account to save your constellation, connect your own AI key, and dive into any topic.
+        </p>
+        <Link href={session ? "/dashboard" : "/signup"}>
+          <Button variant="outline">
+            {session ? "Go to dashboard" : "Create free account"}
             <ArrowRight className="w-4 h-4" />
           </Button>
-        </div>
-        <p className="text-[10px] text-muted mt-2 text-center">Demo responses — connect your key for real AI</p>
+        </Link>
       </div>
     </div>
   );

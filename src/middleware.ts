@@ -61,7 +61,7 @@ export async function middleware(request: NextRequest) {
     !pathWithoutLocale.startsWith("/session") &&
     !pathWithoutLocale.startsWith("/dive") &&
     !pathWithoutLocale.startsWith("/demo") &&
-    pathWithoutLocale !== "/explore"
+    !pathWithoutLocale.startsWith("/explore")
   ) {
     const onboardingStep = token.onboardingStep as string;
     const welcomeSeen = token.welcomeSeen as boolean;

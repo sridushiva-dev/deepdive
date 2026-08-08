@@ -81,15 +81,19 @@ interface ConstellationMapProps {
   selectedNodeId?: string | null;
   stats?: { nodeCount: number; depthMax: number; minutes: number };
   isDemo?: boolean;
+  relaxed?: boolean;
+  hideMiniMap?: boolean;
 }
 
 function buildFlowElements(
-  nodes: ConstellationMapProps["nodes"]
+  nodes: ConstellationMapProps["nodes"],
+  selectedNodeId?: string | null
 ): { flowNodes: Node[]; flowEdges: Edge[] } {
   const flowNodes: Node[] = nodes.map((n) => ({
     id: n.id,
     type: "constellation",
     position: { x: n.positionX, y: n.positionY },
+    selected: selectedNodeId === n.id,
     data: {
       label: n.label,
       state: n.state,
@@ -117,16 +121,21 @@ export function ConstellationMap({
   selectedNodeId,
   stats,
   isDemo,
+  relaxed,
+  hideMiniMap,
 }: ConstellationMapProps) {
-  const { flowNodes: initialNodes, flowEdges: initialEdges } = buildFlowElements(nodes);
+  const { flowNodes: initialNodes, flowEdges: initialEdges } = buildFlowElements(
+    nodes,
+    selectedNodeId
+  );
   const [flowNodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [flowEdges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
   useEffect(() => {
-    const { flowNodes: n, flowEdges: e } = buildFlowElements(nodes);
+    const { flowNodes: n, flowEdges: e } = buildFlowElements(nodes, selectedNodeId);
     setNodes(n);
     setEdges(e);
-  }, [nodes, setNodes, setEdges]);
+  }, [nodes, selectedNodeId, setNodes, setEdges]);
 
   const handleNodeClick = useCallback(
     (_: React.MouseEvent, node: Node) => {
@@ -136,7 +145,12 @@ export function ConstellationMap({
   );
 
   return (
-    <div className="w-full h-full min-h-[400px] rounded-2xl border border-border bg-surface/30 starfield overflow-hidden">
+    <div
+      className={cn(
+        "w-full h-full rounded-2xl border border-border bg-surface/30 starfield overflow-hidden",
+        relaxed ? "min-h-[480px] lg:min-h-[540px]" : "min-h-[400px]"
+      )}
+    >
       <ReactFlow
         nodes={flowNodes}
         edges={flowEdges}
@@ -145,25 +159,28 @@ export function ConstellationMap({
         onNodeClick={handleNodeClick}
         nodeTypes={nodeTypes}
         fitView
-        fitViewOptions={{ padding: 0.3 }}
-        minZoom={0.3}
+        fitViewOptions={{ padding: relaxed ? 0.45 : 0.3 }}
+        minZoom={0.25}
         maxZoom={2}
         proOptions={{ hideAttribution: true }}
       >
-        <Background color="rgba(255,255,255,0.03)" gap={24} />
-        <Controls showInteractive={false} />
-        <MiniMap
-          nodeColor={(n) => {
-            const state = (n.data as ConstellationNodeData).state;
-            if (state === "DEEP") return "#c8a84a";
-            if (state === "EXPLORING") return "#5e9eff";
-            return "#2a2a35";
-          }}
-          maskColor="rgba(5, 5, 8, 0.8)"
-          className="!bg-surface/90 !border-border"
-        />
+        <Background color="rgba(255,255,255,0.03)" gap={relaxed ? 32 : 24} />
+        <Controls showInteractive={false} className="!m-4" />
+        {!hideMiniMap && (
+          <MiniMap
+            nodeColor={(n) => {
+              const state = (n.data as ConstellationNodeData).state;
+              if (state === "DEEP") return "#c8a84a";
+              if (state === "EXPLORING") return "#5e9eff";
+              return "#2a2a35";
+            }}
+            maskColor="rgba(5, 5, 8, 0.8)"
+            className="!bg-surface/90 !border-border !m-4"
+            style={{ width: 100, height: 72 }}
+          />
+        )}
         {stats && (
-          <Panel position="top-left" className="glass rounded-xl px-4 py-2 m-2">
+          <Panel position="top-left" className="glass rounded-xl px-4 py-2.5 m-4">
             <div className="flex gap-4 text-xs text-muted">
               <span>{stats.nodeCount} concepts</span>
               <span>{stats.depthMax} levels deep</span>
@@ -172,7 +189,7 @@ export function ConstellationMap({
           </Panel>
         )}
         {isDemo && (
-          <Panel position="top-right" className="m-2">
+          <Panel position="top-right" className="m-4">
             <span className="text-xs px-3 py-1 rounded-full bg-accent-deep/20 text-accent-deep border border-accent-deep/30">
               Demo dive
             </span>

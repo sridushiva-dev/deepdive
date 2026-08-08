@@ -1,9 +1,10 @@
 export function calculateNodePositions(
-  nodes: Array<{ id: string; parentId?: string | null; depth: number }>
+  nodes: Array<{ id: string; parentId?: string | null; depth: number }>,
+  options?: { horizontalGap?: number; verticalGap?: number }
 ): Map<string, { x: number; y: number }> {
   const positions = new Map<string, { x: number; y: number }>();
-  const HORIZONTAL_GAP = 220;
-  const VERTICAL_GAP = 100;
+  const HORIZONTAL_GAP = options?.horizontalGap ?? 220;
+  const VERTICAL_GAP = options?.verticalGap ?? 100;
 
   const childrenMap = new Map<string | null, string[]>();
   for (const node of nodes) {

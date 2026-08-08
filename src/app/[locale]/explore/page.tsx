@@ -8,7 +8,7 @@ import Link from "next/link";
 import { Navbar } from "@/components/layout/navbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Clock, ArrowRight } from "lucide-react";
+import { Clock, ArrowRight, BookOpen } from "lucide-react";
 
 interface CuratedMap {
   id: string;
@@ -34,7 +34,7 @@ export default function ExplorePage() {
 
   async function forkMap(mapId: string) {
     if (!session) {
-      router.push(`/signup?callbackUrl=/explore&map=${mapId}`);
+      router.push(`/signup?callbackUrl=/explore/${mapId}`);
       return;
     }
 
@@ -54,39 +54,42 @@ export default function ExplorePage() {
   return (
     <div className="min-h-screen starfield">
       <Navbar />
-      <main className="pt-28 px-6 pb-20 max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-2">{t("title")}</h1>
-        <p className="text-muted mb-4">{t("subtitle")}</p>
-        {!session && (
-          <p className="text-sm text-muted mb-10">
-            Browse freely.{" "}
-            <Link href="/signup" className="text-accent hover:underline">
-              Sign up
-            </Link>{" "}
-            to fork a map and start diving.
-          </p>
-        )}
+      <main className="pt-28 lg:pt-32 px-6 lg:px-10 pb-24 max-w-5xl mx-auto">
+        <h1 className="text-3xl font-bold mb-3">{t("title")}</h1>
+        <p className="text-muted mb-2">{t("subtitle")}</p>
+        <p className="text-sm text-muted mb-12">
+          Read and explore every concept for free. Sign up only when you want AI chat or your own saved dive.
+        </p>
 
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
           {maps.map((map) => (
             <Card key={map.id} className="glass border-border/50 hover:border-accent/30 transition-all">
-              <CardHeader>
+              <CardHeader className="pb-4">
                 <CardTitle className="text-lg">{map.title}</CardTitle>
-                <CardDescription>{map.description}</CardDescription>
+                <CardDescription className="leading-relaxed">{map.description}</CardDescription>
               </CardHeader>
-              <CardContent className="flex justify-between items-center">
+              <CardContent className="space-y-4">
                 <span className="text-sm text-muted flex items-center gap-1">
                   <Clock className="w-4 h-4" />
                   {t("estimatedTime", { minutes: map.estimatedMinutes })}
                 </span>
-                <Button
-                  size="sm"
-                  onClick={() => forkMap(map.id)}
-                  disabled={loading === map.id}
-                >
-                  {loading === map.id ? "..." : session ? t("fork") : "Sign up to dive"}
-                  <ArrowRight className="w-4 h-4" />
-                </Button>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Link href={`/explore/${map.id}`} className="flex-1">
+                    <Button variant="outline" className="w-full">
+                      <BookOpen className="w-4 h-4" />
+                      Read concepts free
+                    </Button>
+                  </Link>
+                  <Button
+                    size="default"
+                    className="flex-1"
+                    onClick={() => forkMap(map.id)}
+                    disabled={loading === map.id}
+                  >
+                    {loading === map.id ? "..." : session ? t("fork") : "AI dive (sign up)"}
+                    <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))}
