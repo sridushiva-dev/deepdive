@@ -1,0 +1,110 @@
+{
+  "common": {
+    "appName": "Deep Dive",
+    "tagline": "गहराई में जाते रहें",
+    "continue": "जारी रखें",
+    "back": "वापस",
+    "save": "सहेजें",
+    "cancel": "रद्द करें",
+    "share": "साझा करें",
+    "explore": "खोजें",
+    "learn": "सीखें",
+    "diveDeeper": "और गहराई में जाएँ",
+    "loading": "लोड हो रहा है..."
+  },
+  "landing": {
+    "hero": "सीखने का समुद्र अंतहीन है।",
+    "subhero": "हर गोता आपकी नक्षत्र-माला बनाता है — आपकी गहराई का जीवंत नक्शा।",
+    "cta": "अपना गोता शुरू करें",
+    "ctaSecondary": "देखें कैसे काम करता है",
+    "feature1Title": "अपना AI लाएँ",
+    "feature1Desc": "OpenAI, Anthropic या Google कुंजी जोड़ें। आपकी बुद्धि, आपकी यात्रा।",
+    "feature2Title": "नक्षत्र-माला मानचित्र",
+    "feature2Desc": "हर अवधारणा एक तारा। हर गोता गहराई जोड़ता है।",
+    "feature3Title": "अपनी गहराई साझा करें",
+    "feature3Desc": "अपनी नक्षत्र-माला प्रकाशित करें — दिखाएँ आप कितनी गहराई तक गए।"
+  },
+  "auth": {
+    "login": "साइन इन",
+    "signup": "खाता बनाएँ",
+    "email": "ईमेल",
+    "password": "पासवर्ड",
+    "name": "नाम",
+    "google": "Google से जारी रखें",
+    "noAccount": "खाता नहीं है?",
+    "hasAccount": "पहले से खाता है?",
+    "demo": "पहले डेमो करें"
+  },
+  "onboarding": {
+    "profileTitle": "अपने बारे में बताएँ",
+    "birthDate": "जन्म तिथि",
+    "language": "भाषा",
+    "safeMode": "सुरक्षित मोड (SFW विषय)",
+    "parentEmail": "माता-पिता का ईमेल (13 से कम आयु)",
+    "aiPathTitle": "आप कैसे गोता लगाएँगे?",
+    "byok": "मेरी AI कुंजी जोड़ें",
+    "byokDesc": "OpenAI, Anthropic, Google या अन्य प्रदाता",
+    "demo": "डेमो करें",
+    "demoDesc": "बिना कुंजी के Deep Dive का अनुभव",
+    "welcomeTitle": "समुद्र में आपका स्वागत है",
+    "welcomeSubtitle": "आपकी नक्षत्र-माला प्रतीक्षा कर रही है"
+  },
+  "dashboard": {
+    "greeting": "शुभ प्रभात",
+    "learnToday": "आज आप क्या सीखना चाहते हैं?",
+    "learnPlaceholder": "जैसे: ब्लैक होल कैसे बनते हैं?",
+    "resume": "गोता जारी रखें",
+    "exploreMaps": "क्यूरेटेड मानचित्र खोजें",
+    "recentDives": "हाल के गोते",
+    "startDive": "गोता शुरू करें"
+  },
+  "constellation": {
+    "title": "आपकी नक्षत्र-माला",
+    "concepts": "अवधारणाएँ",
+    "levelsDeep": "स्तर गहराई",
+    "minutes": "मिनट समुद्र में",
+    "discovered": "खोजा",
+    "exploring": "खोज रहे",
+    "deep": "गहरा",
+    "openChat": "चैट खोलें",
+    "demoBadge": "डेमो गोता — वास्तविक AI के लिए कुंजी जोड़ें"
+  },
+  "share": {
+    "title": "अपना गोता साझा करें",
+    "public": "सार्वजनिक",
+    "private": "निजी लिंक",
+    "publicDesc": "गैलरी में दिखाई देगा",
+    "privateDesc": "केवल लिंक वाले देख सकते हैं",
+    "copyLink": "लिंक कॉपी करें",
+    "downloadImage": "छवि डाउनलोड",
+    "whatsapp": "WhatsApp पर साझा करें",
+    "success": "आपकी नक्षत्र-माला साझा करने के लिए तैयार!"
+  },
+  "byok": {
+    "title": "अपना AI जोड़ें",
+    "selectProvider": "AI प्रदाता चुनें",
+    "howToGet": "कुंजी कैसे प्राप्त करें",
+    "pasteKey": "API कुंजी पेस्ट करें",
+    "verify": "कनेक्शन सत्यापित करें",
+    "verified": "कुंजी सत्यापित!",
+    "steps": {
+      "openai": "platform.openai.com → API keys → नई कुंजी बनाएँ",
+      "anthropic": "console.anthropic.com → API keys",
+      "google": "aistudio.google.com → API key प्राप्त करें",
+      "groq": "console.groq.com → API keys",
+      "mistral": "console.mistral.ai → API keys"
+    }
+  },
+  "explore": {
+    "title": "समुद्र खोजें",
+    "subtitle": "क्यूरेटेड नक्षत्र-माला",
+    "estimatedTime": "{minutes} मिनट गोता",
+    "fork": "यह मानचित्र फोर्क करें"
+  },
+  "admin": {
+    "title": "एडमिन",
+    "curatedMaps": "क्यूरेटेड मानचित्र",
+    "publish": "प्रकाशित करें",
+    "unpublish": "अप्रकाशित"
+  }
+}

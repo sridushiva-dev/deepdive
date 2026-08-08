@@ -1,0 +1,214 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  LEARNER
+  ADMIN
+}
+
+enum ParentalConsentStatus {
+  NOT_REQUIRED
+  PENDING
+  VERIFIED
+}
+
+enum OnboardingStep {
+  SIGNED_UP
+  PROFILE_COMPLETE
+  AI_PATH_CHOSEN
+  KEY_VERIFIED
+  DEMO_COMPLETE
+  WELCOME_SEEN
+  COMPLETE
+}
+
+enum SessionStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+}
+
+enum NodeState {
+  SEED
+  DISCOVERED
+  EXPLORING
+  DEEP
+}
+
+enum ShareVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum ApiProvider {
+  OPENAI
+  ANTHROPIC
+  GOOGLE
+  GROQ
+  MISTRAL
+  OTHER
+}
+
+model User {
+  id                    String                @id @default(cuid())
+  name                  String?
+  email                 String                @unique
+  emailVerified         DateTime?
+  image                 String?
+  passwordHash          String?
+  role                  UserRole              @default(LEARNER)
+  birthDate             DateTime?
+  locale                String                @default("en")
+  safeMode              Boolean               @default(false)
+  parentalConsentStatus ParentalConsentStatus @default(NOT_REQUIRED)
+  parentEmail           String?
+  onboardingStep        OnboardingStep        @default(SIGNED_UP)
+  welcomeSeen           Boolean               @default(false)
+  firstShareCompleted   Boolean               @default(false)
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+
+  accounts         Account[]
+  sessions         Session[]
+  apiKeys          ApiKey[]
+  learningSessions LearningSession[]
+  shares           Share[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model ApiKey {
+  id           String      @id @default(cuid())
+  userId       String
+  provider     ApiProvider
+  encryptedKey String
+  iv           String
+  verifiedAt   DateTime?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, provider])
+}
+
+model LearningSession {
+  id               String        @id @default(cuid())
+  userId           String
+  title            String
+  rootTopic        String
+  status           SessionStatus @default(ACTIVE)
+  isDemo           Boolean       @default(false)
+  curatedSourceId  String?
+  depthMax         Int           @default(0)
+  nodeCount        Int           @default(0)
+  totalMinutes     Int           @default(0)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  curatedSource CuratedMap?   @relation(fields: [curatedSourceId], references: [id])
+  nodes        ConceptNode[]
+  messages     Message[]
+  shares       Share[]
+}
+
+model ConceptNode {
+  id        String    @id @default(cuid())
+  sessionId String
+  parentId  String?
+  depth     Int       @default(0)
+  label     String
+  summary   String?
+  body      String?
+  state     NodeState @default(DISCOVERED)
+  positionX Float     @default(0)
+  positionY Float     @default(0)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  session  LearningSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  parent   ConceptNode?    @relation("NodeTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children ConceptNode[]   @relation("NodeTree")
+  messages Message[]
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  sessionId String
+  nodeId    String?
+  role      String
+  content   String
+  createdAt DateTime @default(now())
+
+  session LearningSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  node    ConceptNode?    @relation(fields: [nodeId], references: [id], onDelete: SetNull)
+}
+
+model CuratedMap {
+  id               String   @id @default(cuid())
+  title            String
+  titleHi          String?
+  description      String
+  descriptionHi    String?
+  locale           String   @default("en")
+  treeJson         String
+  estimatedMinutes Int      @default(60)
+  published        Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  learningSessions LearningSession[]
+}
+
+model Share {
+  id          String          @id @default(cuid())
+  sessionId   String
+  userId      String
+  visibility  ShareVisibility @default(PRIVATE)
+  slug        String          @unique @default(cuid())
+  ogImageData String?
+  createdAt   DateTime        @default(now())
+
+  session LearningSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

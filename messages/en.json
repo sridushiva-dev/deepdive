@@ -1,0 +1,110 @@
+{
+  "common": {
+    "appName": "Deep Dive",
+    "tagline": "Never stop diving deeper",
+    "continue": "Continue",
+    "back": "Back",
+    "save": "Save",
+    "cancel": "Cancel",
+    "share": "Share",
+    "explore": "Explore",
+    "learn": "Learn",
+    "diveDeeper": "Dive deeper",
+    "loading": "Loading..."
+  },
+  "landing": {
+    "hero": "The ocean of learning has no bottom.",
+    "subhero": "Every dive builds your constellation — a living map of how deep you've gone.",
+    "cta": "Start your dive",
+    "ctaSecondary": "See how it works",
+    "feature1Title": "Bring your AI",
+    "feature1Desc": "Connect your OpenAI, Anthropic, or Google key. Your intelligence, your journey.",
+    "feature2Title": "Constellation maps",
+    "feature2Desc": "Each concept becomes a star. Each dive adds depth. Your knowledge, visualized.",
+    "feature3Title": "Share your depth",
+    "feature3Desc": "Publish your constellation — show the world how far you've gone."
+  },
+  "auth": {
+    "login": "Sign in",
+    "signup": "Create account",
+    "email": "Email",
+    "password": "Password",
+    "name": "Name",
+    "google": "Continue with Google",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "demo": "Try demo first"
+  },
+  "onboarding": {
+    "profileTitle": "Tell us about yourself",
+    "birthDate": "Date of birth",
+    "language": "Preferred language",
+    "safeMode": "Safe mode (SFW topics only)",
+    "parentEmail": "Parent's email (required under 13)",
+    "aiPathTitle": "How will you dive?",
+    "byok": "Connect my AI key",
+    "byokDesc": "Use your OpenAI, Anthropic, Google, or other provider key",
+    "demo": "Try the demo",
+    "demoDesc": "Experience Deep Dive with a guided demo — no key needed",
+    "welcomeTitle": "Welcome to the ocean",
+    "welcomeSubtitle": "Your constellation awaits"
+  },
+  "dashboard": {
+    "greeting": "Good morning",
+    "learnToday": "What do you want to learn today?",
+    "learnPlaceholder": "e.g. How do black holes form?",
+    "resume": "Continue diving",
+    "exploreMaps": "Explore curated maps",
+    "recentDives": "Recent dives",
+    "startDive": "Start dive"
+  },
+  "constellation": {
+    "title": "Your constellation",
+    "concepts": "concepts",
+    "levelsDeep": "levels deep",
+    "minutes": "min in the ocean",
+    "discovered": "Discovered",
+    "exploring": "Exploring",
+    "deep": "Deep",
+    "openChat": "Open chat",
+    "demoBadge": "Demo dive — connect your key for real AI"
+  },
+  "share": {
+    "title": "Share your dive",
+    "public": "Public",
+    "private": "Private link",
+    "publicDesc": "Visible in gallery and searchable",
+    "privateDesc": "Only people with the link can view",
+    "copyLink": "Copy link",
+    "downloadImage": "Download image",
+    "whatsapp": "Share on WhatsApp",
+    "success": "Your constellation is ready to share!"
+  },
+  "byok": {
+    "title": "Connect your AI",
+    "selectProvider": "Select your AI provider",
+    "howToGet": "How to get your key",
+    "pasteKey": "Paste your API key",
+    "verify": "Verify connection",
+    "verified": "Key verified!",
+    "steps": {
+      "openai": "Go to platform.openai.com → API keys → Create new secret key",
+      "anthropic": "Go to console.anthropic.com → API keys → Create key",
+      "google": "Go to aistudio.google.com → Get API key",
+      "groq": "Go to console.groq.com → API keys",
+      "mistral": "Go to console.mistral.ai → API keys"
+    }
+  },
+  "explore": {
+    "title": "Explore the ocean",
+    "subtitle": "Curated constellations to fork and dive into",
+    "estimatedTime": "{minutes} min dive",
+    "fork": "Fork this map"
+  },
+  "admin": {
+    "title": "Admin",
+    "curatedMaps": "Curated maps",
+    "publish": "Publish",
+    "unpublish": "Unpublish"
+  }
+}
