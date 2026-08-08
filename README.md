@@ -46,17 +46,24 @@ Copy `.env.example` to `.env` and configure:
 | `GOOGLE_CLIENT_SECRET` | Optional Google OAuth |
 | `ADMIN_EMAILS` | Comma-separated admin email allowlist |
 
-## Deployment
+## Deploy on Vercel
 
-**Recommended:** Vercel + Neon PostgreSQL
+1. **Merge** the app branch into `main` (or set Vercel Production Branch to `cursor/deep-dive-foundation-ebdb`)
+2. Create a free [Neon](https://neon.tech) PostgreSQL database
+3. In Vercel → Settings → Environment Variables, add:
+   - `DATABASE_URL` — Neon connection string
+   - `NEXTAUTH_SECRET` — run `openssl rand -base64 32`
+   - `NEXTAUTH_URL` — `https://your-app.vercel.app`
+   - `ENCRYPTION_KEY` — 64 hex chars (`openssl rand -hex 32`)
+   - `ADMIN_EMAILS` — `sridushiva@gmail.com`
+4. After first deploy, run once locally or via Neon SQL:
+   ```bash
+   DATABASE_URL="your-neon-url" npx prisma db push
+   DATABASE_URL="your-neon-url" npm run db:seed
+   ```
+5. Redeploy if needed
 
-1. Push to GitHub
-2. Import to Vercel
-3. Set env vars
-4. Use Neon PostgreSQL `DATABASE_URL`
-5. Change Prisma provider to `postgresql` in `schema.prisma` for production
-
-**Domain:** Point your Hostinger domain to Vercel.
+**Note:** Vercel deploys from `main` by default. If `main` only has a README, you will get a 404.
 
 ## Roadmap
 

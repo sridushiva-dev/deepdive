@@ -1,14 +1,10 @@
+import createMiddleware from "next-intl/middleware";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
-import createIntlMiddleware from "next-intl/middleware";
-import { defaultLocale, locales } from "./i18n/request";
+import { routing } from "./i18n/routing";
 
-const intlMiddleware = createIntlMiddleware({
-  locales,
-  defaultLocale,
-  localePrefix: "as-needed",
-});
+const intlMiddleware = createMiddleware(routing);
 
 const publicPaths = [
   "/",
@@ -91,5 +87,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next|.*\\..*).*)"],
+  matcher: ["/((?!api|_next|_vercel|.*\\..*).*)"],
 };
