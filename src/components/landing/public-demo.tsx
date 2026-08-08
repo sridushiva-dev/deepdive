@@ -197,14 +197,7 @@ export function PublicDemoExperience() {
                         : "bg-surface-elevated border border-border"
                     }`}
                   >
-                    {msg.content.split("\n").map((line, i) => (
-                      <span key={i}>
-                        {line.startsWith("**") && line.endsWith("**")
-                          ? <strong>{line.slice(2, -2)}</strong>
-                          : line}
-                        {i < msg.content.split("\n").length - 1 && <br />}
-                      </span>
-                    ))}
+                    <div className="whitespace-pre-wrap">{msg.content.replace(/\*\*(.*?)\*\*/g, "$1")}</div>
                   </div>
                 </div>
               ))}
