@@ -23,7 +23,10 @@ export function Logo({ className }: { className?: string }) {
 
 export function Navbar({ showAuth = true }: { showAuth?: boolean }) {
   const pathname = usePathname();
-  const isApp = pathname?.includes("/dashboard") || pathname?.includes("/dive");
+  const isApp =
+    pathname?.includes("/dashboard") ||
+    pathname?.includes("/session") ||
+    (pathname?.includes("/dive/") && !pathname?.endsWith("/demo"));
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 glass border-b border-border/50">
@@ -42,6 +45,12 @@ export function Navbar({ showAuth = true }: { showAuth?: boolean }) {
               </>
             ) : (
               <>
+                <Link href="/demo">
+                  <Button variant="ghost" size="sm">How it works</Button>
+                </Link>
+                <Link href="/explore">
+                  <Button variant="ghost" size="sm">Explore</Button>
+                </Link>
                 <Link href="/login">
                   <Button variant="ghost" size="sm">Sign in</Button>
                 </Link>

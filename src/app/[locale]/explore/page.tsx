@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import { Navbar } from "@/components/layout/navbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +22,7 @@ interface CuratedMap {
 export default function ExplorePage() {
   const t = useTranslations("explore");
   const router = useRouter();
+  const { data: session } = useSession();
   const [maps, setMaps] = useState<CuratedMap[]>([]);
   const [loading, setLoading] = useState<string | null>(null);
 
@@ -30,6 +33,11 @@ export default function ExplorePage() {
   }, []);
 
   async function forkMap(mapId: string) {
+    if (!session) {
+      router.push(`/signup?callbackUrl=/explore&map=${mapId}`);
+      return;
+    }
+
     setLoading(mapId);
     const res = await fetch("/api/sessions", {
       method: "POST",
@@ -48,7 +56,16 @@ export default function ExplorePage() {
       <Navbar />
       <main className="pt-28 px-6 pb-20 max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold mb-2">{t("title")}</h1>
-        <p className="text-muted mb-10">{t("subtitle")}</p>
+        <p className="text-muted mb-4">{t("subtitle")}</p>
+        {!session && (
+          <p className="text-sm text-muted mb-10">
+            Browse freely.{" "}
+            <Link href="/signup" className="text-accent hover:underline">
+              Sign up
+            </Link>{" "}
+            to fork a map and start diving.
+          </p>
+        )}
 
         <div className="grid md:grid-cols-2 gap-4">
           {maps.map((map) => (
@@ -67,7 +84,7 @@ export default function ExplorePage() {
                   onClick={() => forkMap(map.id)}
                   disabled={loading === map.id}
                 >
-                  {loading === map.id ? "..." : t("fork")}
+                  {loading === map.id ? "..." : session ? t("fork") : "Sign up to dive"}
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </CardContent>

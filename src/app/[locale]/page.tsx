@@ -5,7 +5,8 @@ import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { Navbar } from "@/components/layout/navbar";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Key, Map, Share2 } from "lucide-react";
+import { LandingConstellationPreview } from "@/components/landing/constellation-preview";
+import { ArrowRight, Key, Map, Share2, MessageSquare, Sparkles } from "lucide-react";
 
 export default function LandingPage() {
   const t = useTranslations("landing");
@@ -26,6 +27,24 @@ export default function LandingPage() {
       icon: Share2,
       title: t("feature3Title"),
       desc: t("feature3Desc"),
+    },
+  ];
+
+  const steps = [
+    {
+      icon: MessageSquare,
+      title: "Ask what you want to learn",
+      desc: "Type a topic or pick a curated map. The ocean of knowledge has no bottom.",
+    },
+    {
+      icon: Sparkles,
+      title: "Dive deeper with AI",
+      desc: "Chat to explore. Each new concept becomes a node in your constellation.",
+    },
+    {
+      icon: Share2,
+      title: "Share your depth",
+      desc: "Publish your map — show how many levels deep you've gone.",
     },
   ];
 
@@ -56,9 +75,10 @@ export default function LandingPage() {
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
-              <Link href="/explore">
+              <Link href="/demo">
                 <Button variant="outline" size="lg" className="w-full sm:w-auto">
                   {t("ctaSecondary")}
+                  <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
             </div>
@@ -69,27 +89,53 @@ export default function LandingPage() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, delay: 0.3 }}
-            className="mt-20 relative"
+            className="mt-20"
           >
             <div className="glass rounded-3xl p-8 md:p-12 border border-border/50">
-              <div className="flex items-center justify-center gap-8 min-h-[200px]">
-                <div className="relative">
-                  <div className="w-16 h-16 rounded-full bg-accent/20 glow-accent flex items-center justify-center">
-                    <div className="w-4 h-4 rounded-full bg-accent" />
-                  </div>
-                  <div className="absolute top-8 left-20 w-32 h-[2px] bg-accent/30 rotate-12" />
-                  <div className="absolute top-16 left-28 w-10 h-10 rounded-full bg-accent-deep/20 border border-accent-deep/40" />
-                  <div className="absolute -top-4 left-24 w-8 h-8 rounded-full bg-accent/30 border border-accent/50" />
-                  <div className="absolute top-12 -left-16 w-12 h-12 rounded-full bg-surface-elevated border border-border" />
-                  <div className="absolute -top-8 left-8 w-6 h-6 rounded-full bg-accent/40" />
-                </div>
-              </div>
+              <LandingConstellationPreview />
               <p className="text-sm text-muted mt-6">
                 Your constellation grows with every dive
               </p>
             </div>
           </motion.div>
         </div>
+
+        {/* How it works — public, no login */}
+        <section id="how-it-works" className="max-w-5xl mx-auto mt-32">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-3">How it works</h2>
+            <p className="text-muted max-w-lg mx-auto">
+              Three steps from curiosity to a shareable map of everything you&apos;ve explored.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6 mb-12">
+            {steps.map((step, i) => (
+              <motion.div
+                key={step.title}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 + i * 0.1 }}
+                className="glass rounded-2xl p-6 border border-border/50 text-center"
+              >
+                <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-4">
+                  <step.icon className="w-6 h-6 text-accent" />
+                </div>
+                <h3 className="font-semibold mb-2">{step.title}</h3>
+                <p className="text-sm text-muted leading-relaxed">{step.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="text-center">
+            <Link href="/demo">
+              <Button size="lg">
+                Try the interactive demo — no sign-up
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            </Link>
+          </div>
+        </section>
 
         <section className="max-w-5xl mx-auto mt-32 grid md:grid-cols-3 gap-6">
           {features.map((feature, i) => (

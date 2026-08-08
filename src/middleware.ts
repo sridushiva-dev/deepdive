@@ -11,6 +11,8 @@ const publicPaths = [
   "/login",
   "/signup",
   "/dive",
+  "/demo",
+  "/explore",
   "/api/auth",
 ];
 
@@ -57,7 +59,9 @@ export async function middleware(request: NextRequest) {
     pathWithoutLocale !== "/onboarding" &&
     pathWithoutLocale !== "/welcome" &&
     !pathWithoutLocale.startsWith("/session") &&
-    !pathWithoutLocale.startsWith("/dive")
+    !pathWithoutLocale.startsWith("/dive") &&
+    !pathWithoutLocale.startsWith("/demo") &&
+    pathWithoutLocale !== "/explore"
   ) {
     const onboardingStep = token.onboardingStep as string;
     const welcomeSeen = token.welcomeSeen as boolean;
